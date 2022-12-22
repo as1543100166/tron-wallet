@@ -4,12 +4,14 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
+	"log"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ranjbar-dev/tron-wallet/enums"
 	"github.com/ranjbar-dev/tron-wallet/grpcClient"
 	"github.com/ranjbar-dev/tron-wallet/util"
-	"math/big"
 )
 
 type TronWallet struct {
@@ -223,4 +225,28 @@ func (t *TronWallet) TransferTRC20(token *Token, toAddressBase58 string, amountI
 func (t *TronWallet) EstimateTransferTRC20Fee() (int64, error) {
 
 	return estimateTrc20TransactionFee()
+}
+
+// CreateAccount activate tron account
+func (t *TronWallet) CreateAccount(from, addr string) (string, error) {
+	log.Print(t.PrivateKey)
+	privateRCDSA, err := t.PrivateKeyRCDSA()
+	if err != nil {
+		return "", fmt.Errorf("RCDSA private key error: %v", err)
+	}
+	tx, err := createCreateAccount(t.Node, from, addr)
+	if err != nil {
+		return "", fmt.Errorf("creating tx pb error: %v", err)
+	}
+	tx, err = signTransaction(tx, privateRCDSA)
+	if err != nil {
+		return "", fmt.Errorf("signing transaction error: %v", err)
+	}
+
+	err = broadcastTransaction(t.Node, tx)
+	if err != nil {
+		return "", fmt.Errorf("broadcast transaction error: %v", err)
+	}
+
+	return hexutil.Encode(tx.GetTxid())[2:], nil
 }

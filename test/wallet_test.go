@@ -1,8 +1,10 @@
 package test
 
 import (
-	tronWallet "github.com/ranjbar-dev/tron-wallet"
+	"log"
 	"testing"
+
+	tronWallet "github.com/ranjbar-dev/tron-wallet"
 )
 
 // GenerateTronWallet test
@@ -77,20 +79,22 @@ func TestPrivateKeyBytes(t *testing.T) {
 func TestBalance(t *testing.T) {
 	w := wallet()
 
-	_, err := w.Balance()
+	s, err := w.Balance()
 	if err != nil {
 		t.Errorf("Balance error was incorect, got: %q, want: %q.", err, "nil")
 	}
+	log.Print(s)
 }
 
 // BalanceTRC20 test
 func TestBalanceTRC20(t *testing.T) {
 	w := wallet()
 
-	_, err := w.BalanceTRC20(token())
+	s, err := w.BalanceTRC20(token())
 	if err != nil {
 		t.Errorf("BalanceTRC20 error was incorect, got: %q, want: %q.", err, "nil")
 	}
+	log.Print(s)
 }
 
 // Transfer test
@@ -122,6 +126,19 @@ func TestTransferTRC20(t *testing.T) {
 	}
 
 	txId, err := w.TransferTRC20(_t, validToAddress, trc20Amount)
+	if err != nil {
+		t.Errorf("Transfer error was incorect, got: %q, want: %q.", err, "nil")
+	}
+	if len(txId) == 0 {
+		t.Errorf("Transfer txId was incorect, got: %q, want: %q.", txId, "not nil")
+	}
+}
+
+func TestCreateAccount(t *testing.T) {
+	w := wallet()
+	//_t := token()
+
+	txId, err := w.CreateAccount(wallet().AddressBase58, "THbavrYh4XLnVAuEuXadhWP2EeXzafQVSQ")
 	if err != nil {
 		t.Errorf("Transfer error was incorect, got: %q, want: %q.", err, "nil")
 	}
